@@ -408,7 +408,7 @@
       const cooldownMessage = document.getElementById('cooldownMessage');
       const cooldownTimer = document.getElementById('cooldownTimer');
       
-      // التحقق من فترة التبريد
+      // دالة لفحص التبريد
       function checkCooldown() {
         const lastSent = localStorage.getItem('lastSentTime');
         if (lastSent) {
@@ -475,7 +475,7 @@
         e.preventDefault();
         
         // التحقق من فترة التبريد
-        if (checkCooldown()) {
+        if (submitBtn.disabled) {
           return;
         }
         
@@ -511,6 +511,7 @@
         // تأثير عند الإرسال
         submitBtn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال بنجاح!';
         submitBtn.style.background = 'linear-gradient(45deg, #00ff88, #00c6ff)';
+        submitBtn.disabled = true;
         
         setTimeout(() => {
           submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرسالة';
