@@ -12,6 +12,7 @@
       --darker-bg: #16213e;
       --neon-glow: 0 0 10px rgba(0, 198, 255, 0.7);
       --danger-color: #ff3860;
+      --warning-color: #ffcc00;
     }
     
     * {
@@ -201,6 +202,18 @@
       display: none;
     }
 
+    .cooldown-message {
+      color: var(--warning-color);
+      font-size: 0.9rem;
+      margin-top: 15px;
+      text-align: center;
+      display: none;
+      background: rgba(255, 204, 0, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--warning-color);
+    }
+
     .submit-btn {
       background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
       color: white;
@@ -223,10 +236,16 @@
       gap: 10px;
     }
 
-    .submit-btn:hover {
+    .submit-btn:hover:not(:disabled) {
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(0, 198, 255, 0.6);
       animation: neon-pulse 1.5s infinite alternate;
+    }
+
+    .submit-btn:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      cursor: not-allowed;
+      color: rgba(255, 255, 255, 0.5);
     }
 
     .submit-btn::before {
@@ -245,7 +264,7 @@
       z-index: -1;
     }
 
-    .submit-btn:hover::before {
+    .submit-btn:hover::before:not(:disabled) {
       transform: translateX(100%);
     }
 
@@ -353,7 +372,12 @@
       <label for="message">نص الرسالة:</label>
       <textarea id="message" required placeholder="اكتب رسالتك هنا..."></textarea>
 
-      <button type="submit" class="submit-btn">
+      <div class="cooldown-message" id="cooldownMessage">
+        <i class="fas fa-clock"></i> عفواً، لقد أرسلت رسالة للدعم الفني مؤخراً.<br>
+        يمكنك الإرسال بعد: <span id="cooldownTimer">00:00:00</span>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
         <i class="fas fa-paper-plane"></i> إرسال الرسالة
       </button>
     </form>
@@ -380,6 +404,59 @@
       const emailError = document.getElementById('email-error');
       const category = document.getElementById('category');
       const message = document.getElementById('message');
+      const submitBtn = document.getElementById('submitBtn');
+      const cooldownMessage = document.getElementById('cooldownMessage');
+      const cooldownTimer = document.getElementById('cooldownTimer');
+      
+      // التحقق من فترة التبريد
+      function checkCooldown() {
+        const lastSent = localStorage.getItem('lastSentTime');
+        if (lastSent) {
+          const lastSentTime = new Date(lastSent).getTime();
+          const now = new Date().getTime();
+          const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
+          const remainingTime = lastSentTime + cooldownPeriod - now;
+          
+          if (remainingTime > 0) {
+            // تفعيل وضع التبريد
+            enableCooldown(remainingTime);
+            return true;
+          } else {
+            // انتهت فترة التبريد
+            localStorage.removeItem('lastSentTime');
+            cooldownMessage.style.display = 'none';
+            submitBtn.disabled = false;
+          }
+        }
+        return false;
+      }
+      
+      // تفعيل وضع التبريد
+      function enableCooldown(remainingTime) {
+        submitBtn.disabled = true;
+        cooldownMessage.style.display = 'block';
+        
+        // تحديث العداد كل ثانية
+        const cooldownInterval = setInterval(() => {
+          remainingTime -= 1000;
+          
+          if (remainingTime <= 0) {
+            clearInterval(cooldownInterval);
+            cooldownMessage.style.display = 'none';
+            submitBtn.disabled = false;
+            localStorage.removeItem('lastSentTime');
+            return;
+          }
+          
+          // تحويل الميلي ثانية إلى ساعات:دقائق:ثواني
+          const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+          
+          cooldownTimer.textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+      }
       
       // التحقق من صحة البريد الإلكتروني
       emailInput.addEventListener('input', function() {
@@ -391,8 +468,16 @@
         }
       });
       
+      // التحقق من التبريد عند تحميل الصفحة
+      checkCooldown();
+      
       form.addEventListener('submit', (e) => {
         e.preventDefault();
+        
+        // التحقق من فترة التبريد
+        if (checkCooldown()) {
+          return;
+        }
         
         // التحقق من صحة البريد الإلكتروني
         if (!emailInput.validity.valid) {
@@ -408,7 +493,8 @@
           email: emailInput.value.trim(),
           category: category.value,
           text: message.value.trim(),
-          date: new Date().toLocaleString('en-US')
+          date: new Date().toLocaleString('en-US'),
+          timestamp: new Date().getTime()
         };
         
         // الحصول على الرسائل الحالية من localStorage
@@ -416,16 +502,19 @@
         storedMessages.push(msg);
         localStorage.setItem('messages', JSON.stringify(storedMessages));
         
+        // حفظ وقت آخر إرسال
+        localStorage.setItem('lastSentTime', new Date());
+        
+        // تفعيل فترة التبريد
+        checkCooldown();
+        
         // تأثير عند الإرسال
-        const btn = document.querySelector('.submit-btn');
-        btn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال بنجاح!';
-        btn.style.background = 'linear-gradient(45deg, #00ff88, #00c6ff)';
-        btn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال بنجاح!';
+        submitBtn.style.background = 'linear-gradient(45deg, #00ff88, #00c6ff)';
         
         setTimeout(() => {
-          btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرسالة';
-          btn.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
-          btn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرسالة';
+          submitBtn.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
           form.reset();
         }, 2000);
       });
