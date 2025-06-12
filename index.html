@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نموذج التواصل معنا</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>نموذج التواصل معنا</h2>
+      <p>نرحب بكم، يرجى تعبئة النموذج أدناه وسنقوم بالرد عليكم في أقرب وقت</p>
+    </div>
+    
+    <form id="contactForm">
+      <label for="name">الاسم:</label>
+      <input type="text" id="name" required placeholder="اكتب اسمك هنا...">
+      
+      <label for="category">اختر الفئة:</label>
+      <select id="category" required>
+        <option value="">-- اختر الفئة --</option>
+        <option value="Technical Issue">بلاغ مشكلة فنية</option>
+        <option value="General Inquiry">استفسار عام</option>
+        <option value="Suggestion">اقتراح</option>
+        <option value="Complaint">شكوى</option>
+      </select>
+
+      <label for="message">الرسالة:</label>
+      <textarea id="message" rows="5" required placeholder="اكتب رسالتك هنا..."></textarea>
+
+      <button type="submit"><i class="fas fa-paper-plane"></i> إرسال الرسالة</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
