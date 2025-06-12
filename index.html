@@ -4,35 +4,432 @@
   <meta charset="UTF-8">
   <title>نموذج التواصل معنا</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary-color: #00c6ff;
+      --secondary-color: #0072ff;
+      --dark-bg: #1a1a2e;
+      --darker-bg: #16213e;
+      --neon-glow: 0 0 10px rgba(0, 198, 255, 0.7);
+      --danger-color: #ff3860;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+      z-index: 10;
+      text-decoration: none;
+    }
+    
+    .back-btn:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateX(-5px);
+    }
+
+    .contact-header {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .contact-header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      animation: pulse 15s infinite linear;
+      z-index: 0;
+    }
+    
+    @keyframes pulse {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .header-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .contact-header h2 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+      text-shadow: var(--neon-glow);
+      color: var(--primary-color);
+    }
+    
+    .contact-header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      line-height: 1.6;
+    }
+
+    .header-image {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 0 5px rgba(0, 198, 255, 0.5));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+      color: var(--primary-color);
+      position: relative;
+    }
+
+    .input-group {
+      position: relative;
+      margin-top: 8px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-family: 'Cairo', sans-serif;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      transition: all 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(0, 198, 255, 0.3);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input {
+      padding-left: 40px;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .error-message {
+      color: var(--danger-color);
+      font-size: 0.8rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .submit-btn {
+      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      margin-top: 25px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1rem;
+      width: 100%;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0, 198, 255, 0.4);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 198, 255, 0.6);
+      animation: neon-pulse 1.5s infinite alternate;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+      z-index: -1;
+    }
+
+    .submit-btn:hover::before {
+      transform: translateX(100%);
+    }
+
+    @keyframes neon-pulse {
+      0% {
+        box-shadow: 0 0 5px rgba(0, 198, 255, 0.4),
+                    0 0 10px rgba(0, 198, 255, 0.3),
+                    0 0 15px rgba(0, 198, 255, 0.2);
+      }
+      100% {
+        box-shadow: 0 0 10px rgba(0, 198, 255, 0.6),
+                    0 0 20px rgba(0, 198, 255, 0.4),
+                    0 0 30px rgba(0, 198, 255, 0.2);
+      }
+    }
+
+    .floating-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float-particle 15s infinite linear;
+    }
+
+    @keyframes float-particle {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.3;
+      }
+      90% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(100px);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .contact-header {
+        padding: 1.5rem;
+        flex-direction: column;
+      }
+      
+      .contact-header h2 {
+        font-size: 1.8rem;
+      }
+      
+      .header-image {
+        width: 60px;
+        height: 60px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h2>نموذج التواصل معنا</h2>
-      <p>نرحب بكم، يرجى تعبئة النموذج أدناه وسنقوم بالرد عليكم في أقرب وقت</p>
+  <a href="#" class="back-btn" onclick="window.history.back(); return false;">
+    <i class="fas fa-arrow-right"></i> العودة
+  </a>
+  
+  <div class="floating-particles" id="particles"></div>
+  
+  <header class="contact-header">
+    <img src="https://e.top4top.io/p_3450md70z1.png" alt="Contact Icon" class="header-image">
+    <div class="header-content">
+      <h2>تواصل معنا</h2>
+      <p>نحن هنا لمساعدتك! يرجى تعبئة النموذج أدناه وسنقوم بالرد عليك في أقرب وقت ممكن</p>
     </div>
-    
+  </header>
+  
+  <div class="container">
     <form id="contactForm">
-      <label for="name">الاسم:</label>
-      <input type="text" id="name" required placeholder="اكتب اسمك هنا...">
+      <label for="email">البريد الإلكتروني:</label>
+      <div class="input-group">
+        <i class="fas fa-envelope input-icon"></i>
+        <input type="email" id="email" required placeholder="example@domain.com">
+      </div>
+      <div class="error-message" id="email-error">الرجاء إدخال بريد إلكتروني صحيح</div>
       
-      <label for="category">اختر الفئة:</label>
+      <label for="category">نوع الرسالة:</label>
       <select id="category" required>
-        <option value="">-- اختر الفئة --</option>
+        <option value="">-- اختر نوع الرسالة --</option>
         <option value="Technical Issue">بلاغ مشكلة فنية</option>
         <option value="General Inquiry">استفسار عام</option>
         <option value="Suggestion">اقتراح</option>
         <option value="Complaint">شكوى</option>
       </select>
 
-      <label for="message">الرسالة:</label>
-      <textarea id="message" rows="5" required placeholder="اكتب رسالتك هنا..."></textarea>
+      <label for="message">نص الرسالة:</label>
+      <textarea id="message" required placeholder="اكتب رسالتك هنا..."></textarea>
 
-      <button type="submit"><i class="fas fa-paper-plane"></i> إرسال الرسالة</button>
+      <button type="submit" class="submit-btn">
+        <i class="fas fa-paper-plane"></i> إرسال الرسالة
+      </button>
     </form>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // إنشاء جسيمات عائمة
+      const particlesContainer = document.getElementById('particles');
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.width = `${Math.random() * 10 + 5}px`;
+        particle.style.height = particle.style.width;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100 + 100}%`;
+        particle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        particlesContainer.appendChild(particle);
+      }
+
+      const form = document.getElementById('contactForm');
+      const emailInput = document.getElementById('email');
+      const emailError = document.getElementById('email-error');
+      const category = document.getElementById('category');
+      const message = document.getElementById('message');
+      
+      // التحقق من صحة البريد الإلكتروني
+      emailInput.addEventListener('input', function() {
+        if (emailInput.validity.valid) {
+          emailError.style.display = 'none';
+          emailInput.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        } else {
+          emailInput.style.borderColor = 'var(--danger-color)';
+        }
+      });
+      
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // التحقق من صحة البريد الإلكتروني
+        if (!emailInput.validity.valid) {
+          emailError.style.display = 'block';
+          emailInput.style.borderColor = 'var(--danger-color)';
+          emailInput.focus();
+          return;
+        } else {
+          emailError.style.display = 'none';
+        }
+        
+        const msg = {
+          email: emailInput.value.trim(),
+          category: category.value,
+          text: message.value.trim(),
+          date: new Date().toLocaleString('en-US')
+        };
+        
+        // الحصول على الرسائل الحالية من localStorage
+        let storedMessages = JSON.parse(localStorage.getItem('messages')) || [];
+        storedMessages.push(msg);
+        localStorage.setItem('messages', JSON.stringify(storedMessages));
+        
+        // تأثير عند الإرسال
+        const btn = document.querySelector('.submit-btn');
+        btn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال بنجاح!';
+        btn.style.background = 'linear-gradient(45deg, #00ff88, #00c6ff)';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرسالة';
+          btn.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
+          btn.disabled = false;
+          form.reset();
+        }, 2000);
+      });
+    });
+  </script>
 </body>
 </html>
