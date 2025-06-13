@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>نموذج التواصل معنا</title>
+  <title>Support</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -13,6 +13,9 @@
       --neon-glow: 0 0 10px rgba(0, 198, 255, 0.7);
       --danger-color: #ff3860;
       --warning-color: #ffcc00;
+      --success-color: #00fff7;
+      --yellow-particle: #ffeb3b;
+      --green-particle: #4caf50;
     }
     
     * {
@@ -202,6 +205,21 @@
       display: none;
     }
 
+    .char-counter {
+      text-align: left;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 5px;
+    }
+
+    .char-counter.warning {
+      color: var(--warning-color);
+    }
+
+    .char-counter.error {
+      color: var(--danger-color);
+    }
+
     .cooldown-message {
       color: var(--warning-color);
       font-size: 0.9rem;
@@ -293,9 +311,22 @@
 
     .particle {
       position: absolute;
-      background: rgba(255, 255, 255, 0.1);
       border-radius: 50%;
       animation: float-particle 15s infinite linear;
+    }
+
+    .particle.type1 {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .particle.type2 {
+      background: var(--yellow-particle);
+      opacity: 0.6;
+    }
+
+    .particle.type3 {
+      background: var(--green-particle);
+      opacity: 0.6;
     }
 
     @keyframes float-particle {
@@ -304,14 +335,80 @@
         opacity: 0;
       }
       10% {
-        opacity: 0.3;
+        opacity: 0.6;
       }
       90% {
-        opacity: 0.3;
+        opacity: 0.6;
       }
       100% {
         transform: translateY(-100vh) translateX(100px);
         opacity: 0;
+      }
+    }
+
+    /* رسالة النجاح */
+    .success-message {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .success-message.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .success-icon {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 20px;
+      animation: bounceIn 0.8s ease forwards;
+    }
+
+    .success-text {
+      color: white;
+      font-size: 1.5rem;
+      text-align: center;
+      margin-top: 20px;
+      animation: fadeIn 1s ease forwards;
+      animation-delay: 0.5s;
+      opacity: 0;
+    }
+
+    @keyframes bounceIn {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
@@ -333,6 +430,15 @@
       .container {
         padding: 20px;
       }
+
+      .success-icon {
+        width: 80px;
+        height: 80px;
+      }
+
+      .success-text {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
@@ -340,6 +446,12 @@
   <a href="#" class="back-btn" onclick="window.history.back(); return false;">
     <i class="fas fa-arrow-right"></i> العودة
   </a>
+  
+  <!-- رسالة النجاح -->
+  <div class="success-message" id="successMessage">
+    <img src="https://c.top4top.io/p_3451skiyr1.png" alt="Success" class="success-icon">
+    <div class="success-text">تم الإرسال بنجاح<br>سنرد عليك في أقرب وقت ممكن</div>
+  </div>
   
   <div class="floating-particles" id="particles"></div>
   
@@ -356,7 +468,7 @@
       <label for="email">البريد الإلكتروني:</label>
       <div class="input-group">
         <i class="fas fa-envelope input-icon"></i>
-        <input type="email" id="email" required placeholder="example@domain.com">
+        <input type="email" id="email" required placeholder="email@domain.com">
       </div>
       <div class="error-message" id="email-error">الرجاء إدخال بريد إلكتروني صحيح</div>
       
@@ -370,7 +482,8 @@
       </select>
 
       <label for="message">نص الرسالة:</label>
-      <textarea id="message" required placeholder="اكتب رسالتك هنا..."></textarea>
+      <textarea id="message" required placeholder="اكتب رسالتك هنا..." maxlength="3000"></textarea>
+      <div class="char-counter" id="charCounter">0/3000</div>
 
       <div class="cooldown-message" id="cooldownMessage">
         <i class="fas fa-clock"></i> عفواً، لقد أرسلت رسالة للدعم الفني مؤخراً.<br>
@@ -385,11 +498,17 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // إنشاء جسيمات عائمة
+      // إنشاء جسيمات عائمة متعددة الألوان
       const particlesContainer = document.getElementById('particles');
-      for (let i = 0; i < 20; i++) {
+      const particleTypes = ['type1', 'type2', 'type3'];
+      for (let i = 0; i < 40; i++) {
         const particle = document.createElement('div');
         particle.classList.add('particle');
+        
+        // اختيار نوع عشوائي للجسيم
+        const typeIndex = Math.floor(Math.random() * particleTypes.length);
+        particle.classList.add(particleTypes[typeIndex]);
+        
         particle.style.width = `${Math.random() * 10 + 5}px`;
         particle.style.height = particle.style.width;
         particle.style.left = `${Math.random() * 100}%`;
@@ -404,9 +523,30 @@
       const emailError = document.getElementById('email-error');
       const category = document.getElementById('category');
       const message = document.getElementById('message');
+      const charCounter = document.getElementById('charCounter');
       const submitBtn = document.getElementById('submitBtn');
       const cooldownMessage = document.getElementById('cooldownMessage');
       const cooldownTimer = document.getElementById('cooldownTimer');
+      const successMessage = document.getElementById('successMessage');
+      
+      // Webhook URL الخاص بك
+      const WEBHOOK_URL = 'https://discord.com/api/webhooks/1383033587166875670/8f8N5haDaQ19_pelSF8nzJe-0BH4PbK18DaTpDSl5RGMIE8ls3P6l4jH6ZWFXmGBd4rk';
+      
+      // تحديث عداد الأحرف
+      message.addEventListener('input', function() {
+        const currentLength = message.value.length;
+        charCounter.textContent = `${currentLength}/2000`;
+        
+        if (currentLength > 1000) {
+          charCounter.classList.add('warning');
+          charCounter.classList.remove('error');
+        } else if (currentLength > 2900) {
+          charCounter.classList.remove('warning');
+          charCounter.classList.add('error');
+        } else {
+          charCounter.classList.remove('warning', 'error');
+        }
+      });
       
       // دالة لفحص التبريد
       function checkCooldown() {
@@ -414,7 +554,7 @@
         if (lastSent) {
           const lastSentTime = new Date(lastSent).getTime();
           const now = new Date().getTime();
-          const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
+          const cooldownPeriod = 10 * 1000; // 24 ساعة بالميلي ثانية
           const remainingTime = lastSentTime + cooldownPeriod - now;
           
           if (remainingTime > 0) {
@@ -464,6 +604,7 @@
           emailError.style.display = 'none';
           emailInput.style.borderColor = 'rgba(255, 255, 255, 0.2)';
         } else {
+          emailError.style.display = 'block';
           emailInput.style.borderColor = 'var(--danger-color)';
         }
       });
@@ -471,7 +612,60 @@
       // التحقق من التبريد عند تحميل الصفحة
       checkCooldown();
       
-      form.addEventListener('submit', (e) => {
+      // دالة لإرسال الرسالة إلى Discord
+      async function sendToDiscord(messageData) {
+        const embed = {
+          title: "📩 رسالة جديدة من نموذج التواصل",
+          color: 0x00FFF7, // اللون الأزرق الفاتح (#00fff7)
+          fields: [
+            { name: "📧 البريد الإلكتروني", value: messageData.email || "غير معروف", inline: true },
+            { name: "📌 نوع الرسالة", value: getCategoryName(messageData.category), inline: true },
+            { name: "📝 نص الرسالة", value: messageData.text || "لا يوجد نص", inline: false },
+            { name: "⏱ التاريخ والوقت", value: new Date(messageData.timestamp).toLocaleString('en-US'), inline: false }
+          ],
+          timestamp: new Date().toISOString()
+        };
+        
+        try {
+          const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+          
+          if (!response.ok) {
+            console.error('فشل الإرسال إلى Discord:', await response.text());
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error('حدث خطأ في الإرسال:', error);
+          return false;
+        }
+      }
+      
+      // دالة لتحويل اسم الفئة إلى العربية
+      function getCategoryName(categoryValue) {
+        const categories = {
+          'Technical Issue': 'مشكلة فنية',
+          'General Inquiry': 'استفسار عام',
+          'Suggestion': 'اقتراح',
+          'Complaint': 'شكوى'
+        };
+        return categories[categoryValue] || categoryValue;
+      }
+      
+      // دالة لعرض رسالة النجاح
+      function showSuccessMessage() {
+        successMessage.classList.add('show');
+        
+        // إخفاء الرسالة بعد 3 ثواني
+        setTimeout(() => {
+          successMessage.classList.remove('show');
+        }, 2000);
+      }
+      
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         // التحقق من فترة التبريد
@@ -489,35 +683,48 @@
           emailError.style.display = 'none';
         }
         
+        // التحقق من طول النص
+        if (message.value.length > 2000) {
+          alert('الحد الأقصى لطول الرسالة هو 2000 حرف');
+          return;
+        }
+        
         const msg = {
           email: emailInput.value.trim(),
           category: category.value,
           text: message.value.trim(),
-          date: new Date().toLocaleString('en-US'),
           timestamp: new Date().getTime()
         };
         
-        // الحصول على الرسائل الحالية من localStorage
-        let storedMessages = JSON.parse(localStorage.getItem('messages')) || [];
-        storedMessages.push(msg);
-        localStorage.setItem('messages', JSON.stringify(storedMessages));
-        
-        // حفظ وقت آخر إرسال
-        localStorage.setItem('lastSentTime', new Date());
-        
-        // تفعيل فترة التبريد
-        checkCooldown();
-        
-        // تأثير عند الإرسال
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال بنجاح!';
-        submitBtn.style.background = 'linear-gradient(45deg, #00ff88, #00c6ff)';
+        // إرسال الرسالة إلى Discord
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
         submitBtn.disabled = true;
         
-        setTimeout(() => {
+        const success = await sendToDiscord(msg);
+        
+        if (success) {
+          // حفظ وقت آخر إرسال
+          localStorage.setItem('lastSentTime', new Date());
+          
+          // تفعيل فترة التبريد
+          checkCooldown();
+          
+          // عرض رسالة النجاح
+          showSuccessMessage();
+          
+          // إعادة تعيين النموذج
+          setTimeout(() => {
+            form.reset();
+            charCounter.textContent = '0/2000';
+            charCounter.classList.remove('warning', 'error');
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرسالة';
+            submitBtn.disabled = false;
+          }, 2000);
+        } else {
+          alert('حدث خطأ أثناء إرسال الرسالة، يرجى المحاولة مرة أخرى');
           submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرسالة';
-          submitBtn.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
-          form.reset();
-        }, 2000);
+          submitBtn.disabled = false;
+        }
       });
     });
   </script>
