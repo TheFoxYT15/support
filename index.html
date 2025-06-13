@@ -482,8 +482,8 @@
       </select>
 
       <label for="message">نص الرسالة:</label>
-      <textarea id="message" required placeholder="اكتب رسالتك هنا..." maxlength="3000"></textarea>
-      <div class="char-counter" id="charCounter">0/3000</div>
+      <textarea id="message" required placeholder="اكتب رسالتك هنا..." maxlength="2000"></textarea>
+      <div class="char-counter" id="charCounter">0/2000</div>
 
       <div class="cooldown-message" id="cooldownMessage">
         <i class="fas fa-clock"></i> عفواً، لقد أرسلت رسالة للدعم الفني مؤخراً.<br>
@@ -554,7 +554,7 @@
         if (lastSent) {
           const lastSentTime = new Date(lastSent).getTime();
           const now = new Date().getTime();
-          const cooldownPeriod = 10 * 1000; // 24 ساعة بالميلي ثانية
+          const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
           const remainingTime = lastSentTime + cooldownPeriod - now;
           
           if (remainingTime > 0) {
